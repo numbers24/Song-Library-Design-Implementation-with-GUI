@@ -46,4 +46,42 @@ public class test{
 
         ArrayList<song> playlist = new ArrayList<song>();
     }
+        public static void writePlaylist(ArrayList<song> playlist) {
+        try{
+            PrintStream p = new PrintStream(new File("playlist.txt"));
+            for (song s : playlist)
+                p.println("|" + s.name + "|" + s.artist + "|" + s.album + "|" + s.year + "|");
+            p.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+    public static String[] parse(String s){//gets the content between |...| and updates the string upon completion
+        s = s.substring(1);
+        int next = s.indexOf('|');
+        if(next==0)
+            return new String[] {s.substring(0),""}; //returns null if ||
+        else
+            return new String[] {s.substring(next), s.substring(0,next)}; //returns |...|
+    }
+    public static ArrayList<song> readPlaylist() {
+        ArrayList<song> playlist = new ArrayList<song>();
+        try {
+            Scanner scanner = new Scanner(new File("playlist.txt"));
+            while(scanner.hasNextLine()) {
+                String[] p = parse(scanner.nextLine());
+                String name = p[1];
+                p = parse(p[0]);
+                String artist = p[1];
+                p = parse(p[0]);
+                String album = p[1];
+                p = parse(p[0]);
+                String year = p[1];
+                playlist.add(new song(name,artist,album,year));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return playlist;
+    }
 }

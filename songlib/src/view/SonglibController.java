@@ -10,6 +10,8 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
@@ -32,8 +34,10 @@ public class SonglibController {
 	private ObservableList<String> songList;
 	private ArrayList<song> songs;
 	
+	private Stage s;
 	
 	public void start(Stage mainStage) {
+		s = mainStage;
 		songs = util.readPlaylist();
 		songList = FXCollections.observableArrayList();
 		
@@ -63,9 +67,18 @@ public class SonglibController {
 	}
 	
 	public void guiAdd(ActionEvent e) {
+		
+		if(name.getText().equals("") || artist.getText().equals("")) {
+			throwError(s,1);
+			return;
+		}
 		song nSong = new song(name.getText(),artist.getText(),album.getText(),year.getText());
 		
-		int index = util.add(nSong,songs);
+		int index = add(nSong,songs);
+		if(index<0) {
+			throwError(s,2);
+			return;
+		}
 		songList.add(index, (nSong.getName()+", "+nSong.getArtist()));
 		
 		writePlaylist(songs);
@@ -73,11 +86,19 @@ public class SonglibController {
 	}
 	
 	public void guiEdit(ActionEvent e) {
+		
+		if(name.getText().equals("") || artist.getText().equals("")) {
+			throwError(s,3);
+			return;
+		}
 		int index = listView.getSelectionModel().getSelectedIndex();
 		
 		song nSong = new song(name.getText(),artist.getText(),album.getText(),year.getText());
 		
-		edit(nSong, songs.get(index), songs);
+		if(edit(nSong, songs.get(index), songs)<0) {
+			throwError(s,4);
+			return;
+		}
 		songList.set(index, (nSong.getName()+", "+nSong.getArtist()));
 		
 		writePlaylist(songs);
@@ -92,6 +113,32 @@ public class SonglibController {
 		
 		writePlaylist(songs);
 		
+	}
+	
+	public void throwError(Stage mainStage, int err) {
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.initOwner(mainStage);
+		alert.setTitle("Songlib");
+		
+		switch (err) {
+			case 1:
+				alert.setHeaderText("Add Error");
+				alert.setContentText("You must include name and artist when adding new song");
+				break;
+			case 2:
+				alert.setHeaderText("Add Error");
+				alert.setContentText("The song you are attempting to add already exists");
+				break;
+			case 3:
+				alert.setHeaderText("Edit Error");
+				alert.setContentText("The song must include a name and artist");
+				break;
+			case 4:
+				alert.setHeaderText("Edit Error");
+				alert.setContentText("You must include name and artist when adding new song");
+				break;
+		}
+		alert.showAndWait();
 	}
 	
 	public static int add(song new_song, ArrayList<song> playlist) //adds a new song to the playlist alphabetically

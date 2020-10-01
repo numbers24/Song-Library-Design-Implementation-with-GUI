@@ -41,6 +41,7 @@ public class SonglibController {
 			songList.add(s.toString());
 		}
 		
+		FXCollections.reverse(songList);
 		listView.setItems(songList);
 		mainStage.setResizable(false);
 		mainStage.show();
@@ -53,7 +54,7 @@ public class SonglibController {
 
 	private void showDetails(Stage mainStage) {
 		// TODO Auto-generated method stub
-		int index = listView.getSelectionModel().getSelectedIndex();
+		int index = songs.size()-(listView.getSelectionModel().getSelectedIndex()+1) ;
 		
 		name.setText(songs.get(index).getName());
 		artist.setText(songs.get(index).getArtist());
@@ -115,7 +116,7 @@ public class SonglibController {
                 }
             }
             if (s.getName().compareTo(new_song.getName()) < 0) { //if the names are not the same then we will add it in alphabetically (insertion sort)
-                playlist.add(playlist.indexOf(s),new_song);
+                playlist.add(playlist.indexOf(s)-1,new_song);
                 return cnt;
             }
             cnt++;

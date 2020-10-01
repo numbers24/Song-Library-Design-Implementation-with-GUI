@@ -1,1 +1,7 @@
+|f|f|f|f|
+|e|e|e|e|
+|d|b|b|b|
+|c|b|b|b|
+|b|b|b|b|
+|a|a|a|a|
 |||||

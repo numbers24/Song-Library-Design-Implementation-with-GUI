@@ -1,3 +1,4 @@
+//James Aikins & Christopher DeAngelis
 package view;
 
 import java.io.File;
@@ -40,6 +41,7 @@ public class SonglibController {
 		songs = readPlaylist();
 		songList = FXCollections.observableArrayList();
 		
+		//Creates a list of the string representation of the songs
 		for (song s : songs) {
 			songList.add(s.toString());
 		}
@@ -55,6 +57,7 @@ public class SonglibController {
 		
 	}
 
+	//Displays the details of the selected song in the text boxes
 	private void showDetails(Stage mainStage) {
 		// TODO Auto-generated method stub
 		int index = songs.size()-(listView.getSelectionModel().getSelectedIndex()+1) ;
@@ -69,6 +72,7 @@ public class SonglibController {
 	
 	public void guiAdd(ActionEvent e) {
 		
+		//Throws an error if the name or artist section is blank
 		if(name.getText().equals("") || artist.getText().equals("")) {
 			throwError(s,1);
 			return;
@@ -80,7 +84,7 @@ public class SonglibController {
 			throwError(s,2);
 			return;
 		}
-		songList.add(index, (nSong.getName()+", "+nSong.getArtist()));
+		songList.add(songs.size()-(index+1), (nSong.getName()+", "+nSong.getArtist()));
 		
 		
 		if(songs.size()>0) {
@@ -205,8 +209,8 @@ public class SonglibController {
     public static void writePlaylist(ArrayList<song> playlist) { //this function writes the playlist into a txt file using | as a divider
         try{
             PrintStream p = new PrintStream(new File("playlist.txt"));
-            for (song s : playlist)
-                p.println("|" + s.getName() + "|" + s.getArtist() + "|" + s.getAlbum() + "|" + s.getYear() + "|");
+            for (int i=playlist.size()-1;i>=0;i--)
+                p.println("|" + playlist.get(i).getName() + "|" + playlist.get(i).getArtist() + "|" + playlist.get(i).getAlbum() + "|" + playlist.get(i).getYear() + "|");
             p.close();
         } catch (IOException e){
             e.printStackTrace();
@@ -235,7 +239,7 @@ public class SonglibController {
 	                String album = p[1];
 	                p = parse(p[0]);
 	                String year = p[1];
-	                playlist.add(new song(name,artist,album,year));
+	                playlist.add(0,new song(name,artist,album,year));
 	            }
 	        } catch (IOException e) {}
 	        return playlist;

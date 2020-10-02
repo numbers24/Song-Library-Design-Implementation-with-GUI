@@ -214,10 +214,12 @@ public class SonglibController {
 	
     public static int edit(song e, song curr, ArrayList<song> playlist) //edit edits the fields of the current song
     {
+    	int err;
 		delete(curr); //delete the current song
-    	if(add(e) < 0){//add the edited song, add detects conflicts with other songs
+		err = add(e);
+    	if(err < 0){//add the edited song, add detects conflicts with other songs
 			add(curr); //add curr back if e fails
-    		return -1;
+    		return err+1;
 		}
 		return 0;
     }

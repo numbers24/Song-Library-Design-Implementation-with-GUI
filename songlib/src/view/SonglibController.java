@@ -188,19 +188,15 @@ public class SonglibController {
 	
     public static int edit(song e, song curr, ArrayList<song> playlist) //edit edits the fields of the current song
     {
-        int i = playlist.indexOf(curr);
-        for (song s : playlist)
-            if(playlist.indexOf(s)!=i && e.getName().equals(s.getName()) && e.getArtist().equals(s.getArtist())) { //if the edited song has a conflict with the name and artist of another song in the list
-                //the edit cannot happen
-                return -1;
-            }
-        playlist.set(i,e); //the edit has been successful
-        return 0;
+        if(add(e) < 0)
+        	return -1;//add the edited song first, add detects conflicts with other songs
+		delete(curr); //if the edited song has successfully been added then delete current song and return
+		return 0;
     }
     
     public static void writePlaylist(ArrayList<song> playlist) { //this function writes the playlist into a txt file using | as a divider
         try{
-            PrintStream p = new PrintStream(new File("C:\\Users\\Kweku\\eclipse-workspace\\songlib\\src\\util\\playlist.txt"));
+            PrintStream p = new PrintStream(new File("playlist.txt"));
             for (song s : playlist)
                 p.println("|" + s.getName() + "|" + s.getArtist() + "|" + s.getAlbum() + "|" + s.getYear() + "|");
             p.close();
@@ -221,7 +217,7 @@ public class SonglibController {
 	 public static ArrayList<song> readPlaylist() {
 	        ArrayList<song> playlist = new ArrayList<song>();
 	        try {
-	            Scanner scanner = new Scanner(new File("C:\\Users\\Kweku\\eclipse-workspace\\songlib\\src\\util\\playlist.txt"));
+	            Scanner scanner = new Scanner(new File("playlist.txt"));
 	            while(scanner.hasNextLine()) {
 	                String[] p = parse(scanner.nextLine());
 	                String name = p[1];

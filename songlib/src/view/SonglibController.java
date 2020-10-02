@@ -31,7 +31,7 @@ public class SonglibController {
 	@FXML ListView<String> listView;
 	
 	
-	private ObservableList<String> songList;
+	private static ObservableList<String> songList;
 	private static ArrayList<song> songs;
 	
 	private Stage s;
@@ -42,11 +42,9 @@ public class SonglibController {
 		songList = FXCollections.observableArrayList();
 		
 		//Creates a list of the string representation of the songs
-		for (song s : songs) {
-			songList.add(s.toString());
-		}
+		refreshList();
 		
-		FXCollections.reverse(songList);
+		//FXCollections.reverse(songList);
 		listView.setItems(songList);
 		mainStage.setResizable(false);
 		mainStage.show();
@@ -84,8 +82,10 @@ public class SonglibController {
 			throwError(s,2);
 			return;
 		}
-		songList.add(songs.size()-(index+1), (nSong.getName()+", "+nSong.getArtist()));
 		
+		//songList.add(songs.size()-(index+1), (nSong.getName()+", "+nSong.getArtist()));
+		
+		refreshList();
 		
 		if(songs.size()>0) {
 			listView.getSelectionModel().select(index);
@@ -104,12 +104,13 @@ public class SonglibController {
 
 			song nSong = new song(name.getText(), artist.getText(), album.getText(), year.getText());
 
-			if (edit(nSong, songs.get(index), songs) < 0) {
+			if (edit(nSong, songs.get(songs.size()-(index+1)), songs) < 0) {
 				throwError(s, 4);
 				return;
 			}
-			songList.set(index, (nSong.getName() + ", " + nSong.getArtist()));
-
+			//songList.set(songs.size()-(index+1), (nSong.getName() + ", " + nSong.getArtist()));
+			refreshList();
+			
 			writePlaylist(songs);
 		} catch (IndexOutOfBoundsException err) {
 			//throw error to the user that they have no song selected to edit
@@ -120,9 +121,9 @@ public class SonglibController {
 	public void guiDelete(ActionEvent e) {
 		int index = listView.getSelectionModel().getSelectedIndex();
 		
-		delete(songs.get(index));
-		songList.remove(index);
-		
+		delete(songs.get(songs.size()-(index+1)));
+		//songList.remove(index);
+		refreshList();
 		writePlaylist(songs);
 		
 	}
@@ -243,7 +244,12 @@ public class SonglibController {
 	            }
 	        } catch (IOException e) {}
 	        return playlist;
-	    }
+	  }
 	 
-
+	 public static void refreshList() {
+		 songList.clear();
+		 for (song s : songs) {
+				songList.add(0,s.toString());
+		}
+	 }
 }

@@ -58,11 +58,13 @@ public class SonglibController {
 	private void showDetails(Stage mainStage) {
 		// TODO Auto-generated method stub
 		int index = songs.size()-(listView.getSelectionModel().getSelectedIndex()+1) ;
-		
-		name.setText(songs.get(index).getName());
-		artist.setText(songs.get(index).getArtist());
-		album.setText(songs.get(index).getAlbum());
-		year.setText(songs.get(index).getYear());
+
+		try {
+			name.setText(songs.get(index).getName());
+			artist.setText(songs.get(index).getArtist());
+			album.setText(songs.get(index).getAlbum());
+			year.setText(songs.get(index).getYear());
+		} catch (IndexOutOfBoundsException e){}
 	}
 	
 	public void guiAdd(ActionEvent e) {
@@ -89,21 +91,25 @@ public class SonglibController {
 	
 	public void guiEdit(ActionEvent e) {
 		
-		if(name.getText().equals("") || artist.getText().equals("")) {
-			throwError(s,3);
-			return;
+		try {
+			if (name.getText().equals("") || artist.getText().equals("")) {
+				throwError(s, 3);
+				return;
+			}
+			int index = listView.getSelectionModel().getSelectedIndex();
+
+			song nSong = new song(name.getText(), artist.getText(), album.getText(), year.getText());
+
+			if (edit(nSong, songs.get(index), songs) < 0) {
+				throwError(s, 4);
+				return;
+			}
+			songList.set(index, (nSong.getName() + ", " + nSong.getArtist()));
+
+			writePlaylist(songs);
+		} catch (IndexOutOfBoundsException err) {
+			//throw error to the user that they have no song selected to edit
 		}
-		int index = listView.getSelectionModel().getSelectedIndex();
-		
-		song nSong = new song(name.getText(),artist.getText(),album.getText(),year.getText());
-		
-		if(edit(nSong, songs.get(index), songs)<0) {
-			throwError(s,4);
-			return;
-		}
-		songList.set(index, (nSong.getName()+", "+nSong.getArtist()));
-		
-		writePlaylist(songs);
 		
 	}
 	
@@ -147,10 +153,10 @@ public class SonglibController {
     {
 		int cnt = 0;
         for(song s : songs) {
-            if (s.getName().compareTo(new_song.getName()) == 0) { //if the name already exists
+            if (s.getName().toLowerCase().compareTo(new_song.getName().toLowerCase()) == 0) { //if the name already exists
 
-                if(s.getArtist().compareTo(new_song.getArtist()) == 0) { //if the artist already exists
-                    if(!s.getAlbum().equals(new_song.getAlbum()) || !s.getYear().equals(new_song.getYear())){ //if song name and artist are the same but the optional fields are not
+                if(s.getArtist().toLowerCase().compareTo(new_song.getArtist().toLowerCase()) == 0) { //if the artist already exists
+                    if(!s.getAlbum().equalsIgnoreCase(new_song.getAlbum()) || !s.getYear().equalsIgnoreCase(new_song.getYear())){ //if song name and artist are the same but the optional fields are not
                         //"song already exists, but album or year is different, would you like to update?
                         //no: break song will not be added
                         //yes: edit(new_song,s,playlist);
@@ -158,13 +164,13 @@ public class SonglibController {
                     System.out.println("Error: This song already exists in your playlist.");
                     return -1;
                 }
-                if(s.getArtist().compareTo(new_song.getArtist()) < 0) { //if the artists are not the same we will now add it in alphabetically
+                if(s.getArtist().toLowerCase().compareTo(new_song.getArtist().toLowerCase()) < 0) { //if the artists are not the same we will now add it in alphabetically
 
                     songs.add(songs.indexOf(s),new_song);
                     return cnt;
                 }
             }
-            if (s.getName().compareTo(new_song.getName()) < 0) { //if the names are not the same then we will add it in alphabetically (insertion sort)
+            if (s.getName().toLowerCase().compareTo(new_song.getName().toLowerCase()) < 0) { //if the names are not the same then we will add it in alphabetically (insertion sort)
                 songs.add(songs.indexOf(s),new_song);
                 return cnt;
             }
@@ -176,7 +182,7 @@ public class SonglibController {
 	public static int delete(song target) //delete removes the targeted song in the playlist and will return the closest song where the next song takes precedence
     {
         for (song curr : songs)
-            if(curr.getName().equals(target.getName()) && curr.getArtist().equals(target.getArtist()))
+            if(curr.getName().equalsIgnoreCase(target.getName()) && curr.getArtist().equalsIgnoreCase(target.getArtist()))
             {
                 int i = songs.indexOf(curr);
                 songs.remove(i);
@@ -188,9 +194,11 @@ public class SonglibController {
 	
     public static int edit(song e, song curr, ArrayList<song> playlist) //edit edits the fields of the current song
     {
-        if(add(e) < 0)
-        	return -1;//add the edited song first, add detects conflicts with other songs
-		delete(curr); //if the edited song has successfully been added then delete current song and return
+		delete(curr); //delete the current song
+    	if(add(e) < 0){//add the edited song, add detects conflicts with other songs
+			add(curr); //add curr back if e fails
+    		return -1;
+		}
 		return 0;
     }
     
@@ -229,9 +237,7 @@ public class SonglibController {
 	                String year = p[1];
 	                playlist.add(new song(name,artist,album,year));
 	            }
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
+	        } catch (IOException e) {}
 	        return playlist;
 	    }
 	 

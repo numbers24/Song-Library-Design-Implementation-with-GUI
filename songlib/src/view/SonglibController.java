@@ -126,6 +126,14 @@ public class SonglibController {
 		refreshList();
 		writePlaylist(songs);
 		
+		if(songs.size()>0) {
+			listView.getSelectionModel().select(index);
+		} else {
+			name.setText("");
+			artist.setText("");
+			album.setText("");
+			year.setText("");
+		}
 	}
 	
 	public void throwError(Stage mainStage, int err) {
@@ -171,12 +179,12 @@ public class SonglibController {
                 }
                 if(s.getArtist().toLowerCase().compareTo(new_song.getArtist().toLowerCase()) < 0) { //if the artists are not the same we will now add it in alphabetically
 
-                    songs.add(songs.indexOf(s),new_song);
+                    songs.add(songs.size()-(songs.indexOf(s)+1),new_song);
                     return cnt;
                 }
             }
             if (s.getName().toLowerCase().compareTo(new_song.getName().toLowerCase()) < 0) { //if the names are not the same then we will add it in alphabetically (insertion sort)
-                songs.add(songs.indexOf(s),new_song);
+                songs.add(songs.size()-(songs.indexOf(s)+1),new_song);
                 return cnt;
             }
             cnt++;

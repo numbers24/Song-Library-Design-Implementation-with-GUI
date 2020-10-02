@@ -5,17 +5,15 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.Scanner;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
+import javafx.event.*;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 
 
@@ -70,6 +68,9 @@ public class SonglibController {
 	
 	public void guiAdd(ActionEvent e) {
 		
+		//popup asks if you want to continue
+		if(!confirm(s,"Add"))
+			return;
 		//Throws an error if the name or artist section is blank
 		if(name.getText().equals("") || artist.getText().equals("")) {
 			throwError(s,1);
@@ -94,7 +95,9 @@ public class SonglibController {
 	}
 	
 	public void guiEdit(ActionEvent e) {
-		
+		//Throws an error if the name or artist section is blank
+		if(!confirm(s,"Edit"))
+			return;
 		try {
 			if (name.getText().equals("") || artist.getText().equals("")) {
 				throwError(s, 3);
@@ -110,15 +113,19 @@ public class SonglibController {
 			}
 			//songList.set(songs.size()-(index+1), (nSong.getName() + ", " + nSong.getArtist()));
 			refreshList();
-			
+
 			writePlaylist(songs);
 		} catch (IndexOutOfBoundsException err) {
 			//throw error to the user that they have no song selected to edit
 		}
-		
+
 	}
 	
 	public void guiDelete(ActionEvent e) {
+
+		//Throws an error if the name or artist section is blank
+		if(!confirm(s,"Delete"))
+			return;
 		int index = listView.getSelectionModel().getSelectedIndex();
 		
 		delete(songs.get(songs.size()-(index+1)));
@@ -126,16 +133,21 @@ public class SonglibController {
 		refreshList();
 		writePlaylist(songs);
 		
-		if(songs.size()>0) {
-			listView.getSelectionModel().select(index);
-		} else {
-			name.setText("");
-			artist.setText("");
-			album.setText("");
-			year.setText("");
-		}
 	}
-	
+	public boolean confirm(Stage mainStage, String option){
+		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+		alert.initOwner(mainStage);
+		alert.setTitle("Songlib");
+		alert.setHeaderText("Confirmation");
+		alert.setContentText("Are You Sure You Wish to " + option + "?");
+		ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+		ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+		Optional<ButtonType> result = alert.showAndWait();
+		if (result.get() == ButtonType.OK)
+			return true;
+		else
+			return false;
+	}
 	public void throwError(Stage mainStage, int err) {
 		Alert alert = new Alert(AlertType.ERROR);
 		alert.initOwner(mainStage);
@@ -169,22 +181,17 @@ public class SonglibController {
             if (s.getName().toLowerCase().compareTo(new_song.getName().toLowerCase()) == 0) { //if the name already exists
 
                 if(s.getArtist().toLowerCase().compareTo(new_song.getArtist().toLowerCase()) == 0) { //if the artist already exists
-                    if(!s.getAlbum().equalsIgnoreCase(new_song.getAlbum()) || !s.getYear().equalsIgnoreCase(new_song.getYear())){ //if song name and artist are the same but the optional fields are not
-                        //"song already exists, but album or year is different, would you like to update?
-                        //no: break song will not be added
-                        //yes: edit(new_song,s,playlist);
-                    }
                     System.out.println("Error: This song already exists in your playlist.");
                     return -1;
                 }
                 if(s.getArtist().toLowerCase().compareTo(new_song.getArtist().toLowerCase()) < 0) { //if the artists are not the same we will now add it in alphabetically
 
-                    songs.add(songs.size()-(songs.indexOf(s)+1),new_song);
+                    songs.add(songs.indexOf(s),new_song);
                     return cnt;
                 }
             }
             if (s.getName().toLowerCase().compareTo(new_song.getName().toLowerCase()) < 0) { //if the names are not the same then we will add it in alphabetically (insertion sort)
-                songs.add(songs.size()-(songs.indexOf(s)+1),new_song);
+                songs.add(songs.indexOf(s),new_song);
                 return cnt;
             }
             cnt++;

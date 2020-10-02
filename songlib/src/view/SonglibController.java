@@ -4,9 +4,7 @@ package view;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Scanner;
+import java.util.*;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -117,22 +115,23 @@ public class SonglibController {
 			writePlaylist(songs);
 		} catch (IndexOutOfBoundsException err) {
 			//throw error to the user that they have no song selected to edit
+			throwError(s,6);
 		}
 
 	}
 	
 	public void guiDelete(ActionEvent e) {
+		try {
+			//Throws an error if the name or artist section is blank
+			if (!confirm(s, "Delete"))
+				return;
+			int index = listView.getSelectionModel().getSelectedIndex();
 
-		//Throws an error if the name or artist section is blank
-		if(!confirm(s,"Delete"))
-			return;
-		int index = listView.getSelectionModel().getSelectedIndex();
-		
-		delete(songs.get(songs.size()-(index+1)));
-		//songList.remove(index);
-		refreshList();
-		writePlaylist(songs);
-		
+			delete(songs.get(songs.size() - (index + 1)));
+			//songList.remove(index);
+			refreshList();
+			writePlaylist(songs);
+		} catch (IndexOutOfBoundsException err) {throwError(s,5);}
 	}
 	public boolean confirm(Stage mainStage, String option){
 		Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -170,6 +169,14 @@ public class SonglibController {
 				alert.setHeaderText("Edit Error");
 				alert.setContentText("You must include name and artist when adding new song");
 				break;
+			case 5:
+				alert.setHeaderText("Edit Error");
+				alert.setContentText("This song does not contain an album or year");
+				break;
+			case 6:
+				alert.setHeaderText("Edit Error");
+				alert.setContentText("You have no selected a song to edit");
+				break;
 		}
 		alert.showAndWait();
 	}
@@ -181,22 +188,20 @@ public class SonglibController {
             if (s.getName().toLowerCase().compareTo(new_song.getName().toLowerCase()) == 0) { //if the name already exists
 
                 if(s.getArtist().toLowerCase().compareTo(new_song.getArtist().toLowerCase()) == 0) { //if the artist already exists
-                    System.out.println("Error: This song already exists in your playlist.");
                     return -1;
                 }
                 if(s.getArtist().toLowerCase().compareTo(new_song.getArtist().toLowerCase()) < 0) { //if the artists are not the same we will now add it in alphabetically
-
                     songs.add(songs.indexOf(s),new_song);
                     return cnt;
                 }
             }
             if (s.getName().toLowerCase().compareTo(new_song.getName().toLowerCase()) < 0) { //if the names are not the same then we will add it in alphabetically (insertion sort)
-                songs.add(songs.indexOf(s),new_song);
+            	songs.add(songs.indexOf(s),new_song);
                 return cnt;
             }
             cnt++;
         }
-        songs.add(0,new_song);
+        songs.add(songs.size(),new_song);
         return cnt;
     }
 	public static int delete(song target) //delete removes the targeted song in the playlist and will return the closest song where the next song takes precedence
@@ -208,7 +213,6 @@ public class SonglibController {
                 songs.remove(i);
                 return 0;
             }
-        System.out.println("There was no song to delete.");
         return -1;
     }
 	

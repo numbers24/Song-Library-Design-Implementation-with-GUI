@@ -32,13 +32,13 @@ public class SonglibController {
 	
 	
 	private ObservableList<String> songList;
-	private ArrayList<song> songs;
+	private static ArrayList<song> songs;
 	
 	private Stage s;
 	
 	public void start(Stage mainStage) {
 		s = mainStage;
-		songs = util.readPlaylist();
+		songs = readPlaylist();
 		songList = FXCollections.observableArrayList();
 		
 		for (song s : songs) {
@@ -74,15 +74,18 @@ public class SonglibController {
 		}
 		song nSong = new song(name.getText(),artist.getText(),album.getText(),year.getText());
 		
-		int index = add(nSong,songs);
+		int index = add(nSong);
 		if(index<0) {
 			throwError(s,2);
 			return;
 		}
 		songList.add(index, (nSong.getName()+", "+nSong.getArtist()));
 		
+		
+		if(songs.size()>0) {
+			listView.getSelectionModel().select(index);
+		}
 		writePlaylist(songs);
-		listView.getSelectionModel().select(index);
 	}
 	
 	public void guiEdit(ActionEvent e) {
@@ -108,7 +111,7 @@ public class SonglibController {
 	public void guiDelete(ActionEvent e) {
 		int index = listView.getSelectionModel().getSelectedIndex();
 		
-		delete(songs.get(index), songs);
+		delete(songs.get(index));
 		songList.remove(index);
 		
 		writePlaylist(songs);
@@ -141,10 +144,10 @@ public class SonglibController {
 		alert.showAndWait();
 	}
 	
-	public static int add(song new_song, ArrayList<song> playlist) //adds a new song to the playlist alphabetically
+	public static int add(song new_song) //adds a new song to the playlist alphabetically
     {
 		int cnt = 0;
-        for(song s : playlist) {
+        for(song s : songs) {
             if (s.getName().compareTo(new_song.getName()) == 0) { //if the name already exists
 
                 if(s.getArtist().compareTo(new_song.getArtist()) == 0) { //if the artist already exists
@@ -158,25 +161,26 @@ public class SonglibController {
                 }
                 if(s.getArtist().compareTo(new_song.getArtist()) < 0) { //if the artists are not the same we will now add it in alphabetically
 
-                    playlist.add(playlist.indexOf(s),new_song);
+                    songs.add(songs.indexOf(s),new_song);
                     return cnt;
                 }
             }
             if (s.getName().compareTo(new_song.getName()) < 0) { //if the names are not the same then we will add it in alphabetically (insertion sort)
-                playlist.add(playlist.indexOf(s)-1,new_song);
+                songs.add(songs.indexOf(s),new_song);
                 return cnt;
             }
             cnt++;
         }
+        songs.add(0,new_song);
         return cnt;
     }
-	public static int delete(song target, ArrayList<song> playlist) //delete removes the targeted song in the playlist and will return the closest song where the next song takes precedence
+	public static int delete(song target) //delete removes the targeted song in the playlist and will return the closest song where the next song takes precedence
     {
-        for (song curr : playlist)
+        for (song curr : songs)
             if(curr.getName().equals(target.getName()) && curr.getArtist().equals(target.getArtist()))
             {
-                int i = playlist.indexOf(curr);
-                playlist.remove(i);
+                int i = songs.indexOf(curr);
+                songs.remove(i);
                 return 0;
             }
         System.out.println("There was no song to delete.");
